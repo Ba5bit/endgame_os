@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { Chessboard } from "react-chessboard";
 import type { Square } from "chess.js";
 
@@ -32,6 +33,7 @@ import {
   reviewGameFromPgn,
   type CoachReview,
 } from "@/lib/chess/review";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { saveReviewWithGame } from "@/lib/supabase/queries";
 
 const pieceLabels: Record<PromotionPiece, string> = {
@@ -54,6 +56,8 @@ export function ChessBoard() {
   const [reviewing, setReviewing] = useState(false);
   const [reviewProgress, setReviewProgress] = useState({ completed: 0, total: 0 });
   const [reviewMessage, setReviewMessage] = useState<string | null>(null);
+  const [authReady, setAuthReady] = useState(false);
+  const [isSignedIn, setIsSignedIn] = useState(false);
   const [pendingPromotion, setPendingPromotion] =
     useState<PendingPromotion | null>(null);
 
@@ -69,6 +73,7 @@ export function ChessBoard() {
       }
     : getGameStatus(game);
   const canUserMove =
+    isSignedIn &&
     !aiThinking &&
     !pendingPromotion &&
     !game.isGameOver() &&
@@ -80,6 +85,37 @@ export function ChessBoard() {
     return () => {
       engineRef.current?.dispose();
       engineRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    const supabase = getSupabaseBrowserClient();
+
+    if (!supabase) {
+      setAuthReady(true);
+      setIsSignedIn(false);
+      return;
+    }
+
+    let active = true;
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (active) {
+        setIsSignedIn(Boolean(data.session));
+        setAuthReady(true);
+      }
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsSignedIn(Boolean(session));
+      setAuthReady(true);
+    });
+
+    return () => {
+      active = false;
+      subscription.unsubscribe();
     };
   }, []);
 
@@ -292,7 +328,7 @@ export function ChessBoard() {
       <div className="grid gap-5 px-4 py-5 sm:px-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:px-8 lg:py-8">
       <main className="flex min-w-0 flex-col items-center justify-center gap-5">
         <div className="w-full max-w-[min(92vw,calc(100vh-6rem),46rem)] lg:max-w-[min(calc(100vw-28rem),calc(100vh-7rem),48rem)]">
-          <div className="rounded-lg border border-border/70 bg-card/72 p-2 shadow-2xl shadow-black/40">
+          <div className="relative rounded-lg border border-border/70 bg-card/72 p-2 shadow-2xl shadow-black/40">
             <Chessboard
               options={{
                 id: "endgame-os-board",
@@ -316,6 +352,30 @@ export function ChessBoard() {
                 },
               }}
             />
+            {authReady && !isSignedIn ? (
+              <div className="absolute inset-2 z-30 flex items-center justify-center rounded-md bg-background/78 p-4 backdrop-blur-sm">
+                <div className="glass-panel w-full max-w-sm rounded-lg p-5 text-center shadow-2xl">
+                  <p className="text-xs font-medium uppercase tracking-[0.18em] text-primary">
+                    Account required
+                  </p>
+                  <h2 className="mt-2 text-xl font-semibold text-foreground">
+                    Sign in to start training
+                  </h2>
+                  <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                    Games and reviews are saved to your profile, so sign in
+                    before making a move.
+                  </p>
+                  <div className="mt-5 grid gap-2 sm:grid-cols-2">
+                    <Button asChild>
+                      <Link href="/auth">Sign in</Link>
+                    </Button>
+                    <Button asChild variant="secondary">
+                      <Link href="/profile">Profile</Link>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ) : null}
           </div>
         </div>
 

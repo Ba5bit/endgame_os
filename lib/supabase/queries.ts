@@ -2,7 +2,13 @@ import type { User } from "@supabase/supabase-js";
 
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { CoachReview } from "@/lib/chess/review";
-import type { GameInsert, GameResult, Profile } from "@/lib/supabase/types";
+import type {
+  Game,
+  GameInsert,
+  GameResult,
+  GameReview,
+  Profile,
+} from "@/lib/supabase/types";
 
 export type ProfileStats = {
   profile: Profile;
@@ -22,6 +28,10 @@ export type LeaderboardEntry = {
   draws: number;
   averageAccuracy: number;
   disciplineScore: number;
+};
+
+export type SavedGameLog = Game & {
+  review: GameReview | null;
 };
 
 export async function getCurrentUser(): Promise<User | null> {
@@ -173,6 +183,47 @@ export async function getProfileStats(user?: User | null) {
   }
 
   return buildStats(profile, games ?? []);
+}
+
+export async function getSavedGameLogs(limit = 25): Promise<SavedGameLog[]> {
+  const supabase = getSupabaseBrowserClient();
+  const user = await getCurrentUser();
+
+  if (!supabase || !user) {
+    return [];
+  }
+
+  const { data: games, error: gamesError } = await supabase
+    .from("games")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (gamesError) {
+    throw gamesError;
+  }
+
+  if (!games?.length) {
+    return [];
+  }
+
+  const gameIds = games.map((game) => game.id);
+  const { data: reviews, error: reviewsError } = await supabase
+    .from("game_reviews")
+    .select("*")
+    .eq("user_id", user.id)
+    .in("game_id", gameIds);
+
+  if (reviewsError) {
+    throw reviewsError;
+  }
+
+  return games.map((game) => ({
+    ...game,
+    review:
+      reviews?.find((review) => review.game_id === game.id) ?? null,
+  }));
 }
 
 export async function getLeaderboardByCity(city: string) {
