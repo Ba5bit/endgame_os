@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { LogIn, UserPlus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { KAZAKHSTAN_CITIES } from "@/lib/kazakhstan/cities";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
 import {
   signInWithPassword,
@@ -134,7 +135,7 @@ export function AuthForm() {
               onChange={setUsername}
               required
             />
-            <Field label="City" value={city} onChange={setCity} required />
+            <CityField value={city} onChange={setCity} />
           </>
         ) : null}
       </div>
@@ -159,6 +160,37 @@ export function AuthForm() {
         {loading ? "Working..." : mode === "signup" ? "Create account" : "Sign in"}
       </Button>
     </form>
+  );
+}
+
+function CityField({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <label className="block">
+      <span className="mb-1 block text-sm font-medium text-muted-foreground">
+        City
+      </span>
+      <select
+        className="h-10 w-full rounded-md border border-border/80 bg-background/70 px-3 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        required
+      >
+        <option value="" disabled>
+          Choose your city
+        </option>
+        {KAZAKHSTAN_CITIES.map((cityName) => (
+          <option key={cityName} value={cityName}>
+            {cityName}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 }
 

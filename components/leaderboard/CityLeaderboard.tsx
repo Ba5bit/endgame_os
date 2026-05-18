@@ -4,39 +4,13 @@ import { useCallback, useEffect, useState } from "react";
 import { ChevronDown } from "lucide-react";
 
 import { AppHeader } from "@/components/product/AppHeader";
+import { LEADERBOARD_CITY_OPTIONS } from "@/lib/kazakhstan/cities";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
 import {
   getLeaderboardByCity,
   type LeaderboardEntry,
 } from "@/lib/supabase/queries";
 import { cn } from "@/lib/utils";
-
-const KAZAKHSTAN_CITIES = [
-  "All Kazakhstan",
-  "Astana",
-  "Almaty",
-  "Shymkent",
-  "Aktobe",
-  "Karaganda",
-  "Taraz",
-  "Pavlodar",
-  "Oskemen",
-  "Semey",
-  "Atyrau",
-  "Kostanay",
-  "Kyzylorda",
-  "Oral",
-  "Petropavl",
-  "Aktau",
-  "Turkistan",
-  "Kokshetau",
-  "Taldykorgan",
-  "Ekibastuz",
-  "Rudny",
-  "Zhezkazgan",
-  "Balkhash",
-  "Temirtau",
-];
 
 export function CityLeaderboard() {
   const [selectedCity, setSelectedCity] = useState("All Kazakhstan");
@@ -127,7 +101,7 @@ export function CityLeaderboard() {
 
                 {cityMenuOpen ? (
                   <div className="absolute left-0 right-0 top-12 z-20 max-h-72 overflow-y-auto rounded-md border border-border/80 bg-card p-1 shadow-2xl">
-                  {KAZAKHSTAN_CITIES.map((cityName) => {
+                  {LEADERBOARD_CITY_OPTIONS.map((cityName) => {
                     const isAll = cityName === "All Kazakhstan";
                     const value = isAll ? "" : cityName;
 

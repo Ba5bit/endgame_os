@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Lock, Sparkles, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -17,13 +19,19 @@ type ProUpgradeModalProps = {
 };
 
 export function ProUpgradeModal({ open, onOpenChange }: ProUpgradeModalProps) {
-  if (!open) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted || !open) {
     return null;
   }
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 p-4 backdrop-blur-sm">
-      <div className="glass-panel w-full max-w-lg rounded-lg p-5">
+  return createPortal(
+    <div className="fixed inset-0 z-[2147483647] flex items-center justify-center bg-background/80 p-4 backdrop-blur-sm">
+      <div className="glass-panel w-full max-w-lg rounded-lg p-4 shadow-2xl sm:p-5">
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
             <p className="text-xs font-medium uppercase tracking-[0.18em] text-primary">
@@ -69,7 +77,8 @@ export function ProUpgradeModal({ open, onOpenChange }: ProUpgradeModalProps) {
           Prototype only. No Stripe checkout is connected.
         </p>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 

@@ -55,55 +55,106 @@ export function ProductNav({
   }, []);
 
   return (
-    <nav
+    <div
       className={cn(
-        "mx-auto flex w-full items-center justify-between gap-3 px-4 py-4 sm:px-6",
+        "mx-auto w-full px-4 py-3 sm:px-6",
         maxWidth,
       )}
     >
-      <Link className="flex items-center gap-3 text-foreground" href="/">
-        <span className="flex size-9 items-center justify-center rounded-md border border-primary/50 bg-primary/10 text-sm font-bold text-primary">
-          EO
-        </span>
-        <span className="text-xl font-semibold tracking-normal">Endgame OS</span>
-      </Link>
-      <div className="hidden items-center gap-2 md:flex">
+      <div className="flex items-center justify-between gap-3">
+        <Link
+          className="flex min-w-0 items-center gap-2 text-foreground sm:gap-3"
+          href="/"
+        >
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-md border border-primary/50 bg-primary/10 text-sm font-bold text-primary">
+            EO
+          </span>
+          <span className="hidden truncate text-xl font-semibold tracking-normal sm:inline">
+            Endgame OS
+          </span>
+        </Link>
+
+        <nav className="hidden items-center gap-2 md:flex">
+          {navItems.map((item) => (
+            <NavItem
+              active={active === item.key}
+              href={item.href}
+              key={item.key}
+              label={item.label}
+            />
+          ))}
+        </nav>
+
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+          <ThemeToggle />
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={onUpgrade}
+            title="Upgrade to Pro"
+          >
+            <Crown />
+            <span className="hidden sm:inline">Pro</span>
+          </Button>
+          {!isSignedIn ? (
+            <Button
+              asChild
+              size="sm"
+              variant={active === "auth" ? "default" : "secondary"}
+            >
+              <Link href="/auth">Sign in</Link>
+            </Button>
+          ) : null}
+          <Button asChild variant="secondary" size="icon">
+            <Link
+              className={cn(active === "profile" && "text-primary")}
+              href="/profile"
+              aria-label="Open profile"
+              title="Open profile"
+            >
+              <UserCircle />
+            </Link>
+          </Button>
+        </div>
+      </div>
+
+      <nav className="mt-3 grid grid-cols-2 gap-2 md:hidden">
         {navItems.map((item) => (
-          <Link
-            className={cn(
-              "rounded-md border border-border/70 bg-background/45 px-4 py-2 text-sm font-semibold text-muted-foreground transition hover:border-primary/50 hover:bg-primary/10 hover:text-foreground",
-              active === item.key &&
-                "border-primary/60 bg-primary/15 text-foreground shadow-sm shadow-primary/10",
-            )}
+          <NavItem
+            active={active === item.key}
             href={item.href}
             key={item.key}
-          >
-            {item.label}
-          </Link>
+            label={item.label}
+            mobile
+          />
         ))}
-      </div>
-      <div className="flex items-center gap-2">
-        <ThemeToggle />
-        <Button variant="secondary" onClick={onUpgrade}>
-          <Crown />
-          Pro
-        </Button>
-        {!isSignedIn ? (
-          <Button asChild variant={active === "auth" ? "default" : "secondary"}>
-            <Link href="/auth">Sign in</Link>
-          </Button>
-        ) : null}
-        <Button asChild variant="secondary" size="icon">
-          <Link
-            className={cn(active === "profile" && "text-primary")}
-            href="/profile"
-            aria-label="Open profile"
-            title="Open profile"
-          >
-            <UserCircle />
-          </Link>
-        </Button>
-      </div>
-    </nav>
+      </nav>
+    </div>
+  );
+}
+
+function NavItem({
+  active,
+  href,
+  label,
+  mobile,
+}: {
+  active: boolean;
+  href: string;
+  label: string;
+  mobile?: boolean;
+}) {
+  return (
+    <Link
+      className={cn(
+        "rounded-md border border-border/70 bg-background/45 px-4 py-2 text-center text-sm font-semibold text-muted-foreground transition hover:border-primary/50 hover:bg-primary/10 hover:text-foreground",
+        active &&
+          "border-primary/60 bg-primary/15 text-foreground shadow-sm shadow-primary/10",
+        mobile && "px-3",
+      )}
+      href={href}
+    >
+      {label}
+    </Link>
   );
 }
