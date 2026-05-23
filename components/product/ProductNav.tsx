@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Crown, UserCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -66,8 +67,15 @@ export function ProductNav({
           className="flex min-w-0 items-center gap-2 text-foreground sm:gap-3"
           href="/"
         >
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-md border border-primary/50 bg-primary/10 text-sm font-bold text-primary">
-            EO
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-md border border-primary/50 bg-primary/10 p-1.5">
+            <Image
+              src="/chess-icon.png"
+              alt=""
+              aria-hidden="true"
+              width={24}
+              height={24}
+              className="size-full object-contain dark:invert"
+            />
           </span>
           <span className="hidden truncate text-xl font-semibold tracking-normal sm:inline">
             Endgame OS
